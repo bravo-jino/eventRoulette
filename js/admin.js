@@ -294,9 +294,10 @@ async function getVisibleRows() {
 async function renderLog() {
   const rows = await getVisibleRows();
   const displayRows = rows.slice().reverse();
+  const sourceName = RouletteStore.isRemoteEnabled() ? "공용 DB" : "로컬 DB";
   logSummary.textContent = visibleLogSource === "csv"
     ? `CSV 파일 기록 ${rows.length}건`
-    : `로컬 DB 기록 ${rows.length}건`;
+    : `${sourceName} 기록 ${rows.length}건`;
   renderStats(rows);
   logBody.innerHTML = "";
 
@@ -500,6 +501,9 @@ window.addEventListener("resize", renderPreview);
 
 (async function initAdmin() {
   await RouletteStore.init();
+  if (RouletteStore.isRemoteEnabled()) {
+    csvStatus.textContent = "공용 DB 기록을 표시 중입니다.";
+  }
   const initialConfig = await RouletteStore.getConfig();
   renderSettings(initialConfig);
   renderRows(initialConfig);

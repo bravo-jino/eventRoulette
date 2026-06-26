@@ -119,6 +119,124 @@ function rouletteParseCsv(text) {
   }).filter((entry) => entry.label);
 }
 
+const RouletteRemote = (() => {
+  const config = window.ROULETTE_REMOTE_CONFIG || {};
+  const supabaseUrl = String(config.supabaseUrl || "").replace(/\/+$/, "");
+  const supabaseAnonKey = String(config.supabaseAnonKey || "");
+  const configTable = String(config.configTable || "roulette_config");
+  const logsTable = String(config.logsTable || "roulette_logs");
+
+  function isEnabled() {
+    return Boolean(supabaseUrl && supabaseAnonKey);
+  }
+
+  function buildUrl(path) {
+    return `${supabaseUrl}/rest/v1/${path}`;
+  }
+
+  async function request(path, options = {}) {
+    const response = await fetch(buildUrl(path), {
+      ...options,
+      headers: {
+        apikey: supabaseAnonKey,
+        Authorization: `Bearer ${supabaseAnonKey}`,
+        "Content-Type": "application/json",
+        ...(options.headers || {})
+      }
+    });
+
+    if (!response.ok) {
+      const message = await response.text();
+      throw new Error(message || `Remote request failed: ${response.status}`);
+    }
+
+    if (response.status === 204) return null;
+
+    const text = await response.text();
+    return text ? JSON.parse(text) : null;
+  }
+
+  async function getConfig() {
+    const rows = await request(`${configTable}?id=eq.active&select=data&limit=1`);
+    return rouletteNormalizeConfig(rows?.[0]?.data || ROULETTE_DEFAULT_CONFIG);
+  }
+
+  async function saveConfig(rawConfig) {
+    const normalizedConfig = rouletteNormalizeConfig(rawConfig);
+    await request(`${configTable}?on_conflict=id`, {
+      method: "POST",
+      headers: { Prefer: "resolution=merge-duplicates" },
+      body: JSON.stringify({
+        id: "active",
+        data: normalizedConfig,
+        updated_at: new Date().toISOString()
+      })
+    });
+    return normalizedConfig;
+  }
+
+  async function resetConfig() {
+    return saveConfig(ROULETTE_DEFAULT_CONFIG);
+  }
+
+  async function addLog(label, timestamp = new Date().toISOString()) {
+    const rows = await request(logsTable, {
+      method: "POST",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify({ timestamp, label })
+    });
+    return rows?.[0] || { timestamp, label };
+  }
+
+  async function getLogs() {
+    return request(`${logsTable}?select=id,timestamp,label&order=id.asc`);
+  }
+
+  async function clearLogs() {
+    await request(`${logsTable}?id=not.is.null`, { method: "DELETE" });
+  }
+
+  async function deleteLog(id) {
+    const key = Number(id);
+    if (!Number.isFinite(key)) return;
+    await request(`${logsTable}?id=eq.${key}`, { method: "DELETE" });
+  }
+
+  async function importData(data) {
+    if (!data || typeof data !== "object") {
+      throw new Error("Invalid backup data");
+    }
+
+    await saveConfig(data.config || ROULETTE_DEFAULT_CONFIG);
+    await clearLogs();
+
+    const logs = Array.isArray(data.logs) ? data.logs : [];
+    if (logs.length === 0) return;
+
+    await request(logsTable, {
+      method: "POST",
+      body: JSON.stringify(logs
+        .filter((entry) => entry && entry.label)
+        .map((entry) => ({
+          timestamp: entry.timestamp || new Date().toISOString(),
+          label: entry.label
+        })))
+    });
+  }
+
+  return {
+    isEnabled,
+    getConfig,
+    saveConfig,
+    resetConfig,
+    addLog,
+    getLogs,
+    clearLogs,
+    deleteLog,
+    importData
+  };
+})();
+
 const RouletteStore = (() => {
   const DB_NAME = "rouletteLocalDb";
   const DB_VERSION = 1;
@@ -199,6 +317,7 @@ const RouletteStore = (() => {
 
   async function init() {
     await openDb();
+    if (RouletteRemote.isEnabled()) return;
     try {
       await migrateLegacyData();
     } catch {
@@ -207,37 +326,44 @@ const RouletteStore = (() => {
   }
 
   async function getConfig() {
+    if (RouletteRemote.isEnabled()) return RouletteRemote.getConfig();
     await init();
     const config = await withStore("config", "readonly", (store) => requestToPromise(store.get(CONFIG_KEY)));
     return rouletteNormalizeConfig(config || ROULETTE_DEFAULT_CONFIG);
   }
 
   async function saveConfig(config) {
+    if (RouletteRemote.isEnabled()) return RouletteRemote.saveConfig(config);
     const normalizedConfig = rouletteNormalizeConfig(config);
     await withStore("config", "readwrite", (store) => store.put(normalizedConfig, CONFIG_KEY));
     return normalizedConfig;
   }
 
   async function resetConfig() {
+    if (RouletteRemote.isEnabled()) return RouletteRemote.resetConfig();
     return saveConfig(ROULETTE_DEFAULT_CONFIG);
   }
 
   async function addLog(label, timestamp = new Date().toISOString(), syncCsv = true) {
+    if (RouletteRemote.isEnabled()) return RouletteRemote.addLog(label, timestamp);
     const entry = { timestamp, label };
     await withStore("logs", "readwrite", (store) => store.add(entry));
     return entry;
   }
 
   async function getLogs() {
+    if (RouletteRemote.isEnabled()) return RouletteRemote.getLogs();
     await openDb();
     return withStore("logs", "readonly", (store) => requestToPromise(store.getAll()));
   }
 
   async function clearLogs() {
+    if (RouletteRemote.isEnabled()) return RouletteRemote.clearLogs();
     await withStore("logs", "readwrite", (store) => store.clear());
   }
 
   async function deleteLog(id) {
+    if (RouletteRemote.isEnabled()) return RouletteRemote.deleteLog(id);
     const key = Number(id);
     if (!Number.isFinite(key)) return;
     await withStore("logs", "readwrite", (store) => store.delete(key));
@@ -255,6 +381,7 @@ const RouletteStore = (() => {
   }
 
   async function importData(data) {
+    if (RouletteRemote.isEnabled()) return RouletteRemote.importData(data);
     if (!data || typeof data !== "object") {
       throw new Error("Invalid backup data");
     }
@@ -304,6 +431,7 @@ const RouletteStore = (() => {
   }
 
   return {
+    isRemoteEnabled: RouletteRemote.isEnabled,
     init,
     getConfig,
     saveConfig,
