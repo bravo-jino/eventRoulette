@@ -1,0 +1,11 @@
+{
+  "name": "Event Roulette",
+  "description": "A browser-based roulette event page with an admin screen.",
+  "repository": "https://github.com/bravo-jino/eventRoulette",
+  "keywords": ["node", "static", "roulette", "event"],
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ]
+}
