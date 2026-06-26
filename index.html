@@ -1,0 +1,50 @@
+﻿<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>룰렛 이벤트</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <main class="page event-page">
+      <a class="admin-link admin-link-fixed" href="admin.html">관리자 설정</a>
+      <header class="hero">
+        <div id="title-image-slot" class="title-image-slot" hidden>
+          <img id="title-image" alt="이벤트 이미지" />
+        </div>
+        <div class="title-copy">
+          <h1 id="event-title">룰렛 이벤트</h1>
+          <p class="subtitle">버튼을 눌러 행운의 결과를 확인하세요.</p>
+        </div>
+      </header>
+
+      <section class="wheel-wrap" aria-live="polite">
+        <div class="pointer" aria-hidden="true"></div>
+        <canvas id="wheel" width="720" height="720" aria-label="룰렛"></canvas>
+      </section>
+
+      <div class="actions">
+        <button id="spin" type="button">룰렛 돌리기</button>
+      </div>
+
+      <p id="result" class="result" role="status"></p>
+    </main>
+
+    <div id="admin-auth-overlay" class="action-auth-overlay" hidden>
+      <div class="action-auth-panel" role="dialog" aria-modal="true" aria-label="관리자 비밀번호 확인">
+        <h2>비밀번호 확인</h2>
+        <p>관리자 페이지로 이동하려면 비밀번호를 입력하세요.</p>
+        <input id="admin-auth-password" type="password" autocomplete="current-password" placeholder="비밀번호" />
+        <p id="admin-auth-error" class="auth-error" aria-live="assertive" hidden>비밀번호가 틀렸습니다.</p>
+        <div class="admin-actions compact action-auth-actions">
+          <button id="admin-auth-cancel" type="button">취소</button>
+          <button id="admin-auth-submit" type="button">확인</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>

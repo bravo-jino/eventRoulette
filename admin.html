@@ -1,0 +1,129 @@
+﻿<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>룰렛 관리자</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <main class="page admin">
+      <header class="hero">
+        <h1>룰렛 관리자 설정</h1>
+        <p class="subtitle">상품, 확률, 화면 이미지, 결과 기록을 설정하세요.</p>
+      </header>
+
+      <div class="admin-save-bar top">
+        <span>변경사항은 저장 후 메인 화면에 적용됩니다.</span>
+        <button class="save-config" type="button">전체 설정 저장</button>
+      </div>
+
+      <section class="card settings-card">
+        <h2>화면 설정</h2>
+        <div class="setting-row">
+          <div>
+            <strong>타이틀 문구</strong>
+            <p class="hint">메인 화면 상단 제목으로 표시됩니다.</p>
+          </div>
+          <input id="event-title-input" class="setting-input" type="text" placeholder="룰렛 이벤트" />
+        </div>
+        <div class="setting-row">
+          <div>
+            <strong>버튼 문구</strong>
+            <p class="hint">룰렛 실행 버튼에 표시됩니다.</p>
+          </div>
+          <input id="spin-button-input" class="setting-input" type="text" placeholder="룰렛 돌리기" />
+        </div>
+        <div class="setting-row">
+          <div>
+            <strong>타이틀 이미지</strong>
+            <p class="hint">메인 화면 상단의 남는 공간에 표시됩니다.</p>
+          </div>
+          <div class="image-setting">
+            <input id="title-image-upload" type="file" accept="image/*" />
+            <button id="remove-title-image" type="button">이미지 제거</button>
+          </div>
+        </div>
+        <div id="title-image-preview" class="admin-image-preview" hidden>
+          <img alt="타이틀 이미지 미리보기" />
+        </div>
+        <div class="setting-row">
+          <div>
+            <strong>결과 기록</strong>
+            <p class="hint">켜면 메인 룰렛 결과가 브라우저에 저장됩니다. 끄면 테스트 모드로 기록하지 않습니다.</p>
+          </div>
+          <label class="switch">
+            <input id="logging-enabled" type="checkbox" />
+            <span>기록</span>
+          </label>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="table-head">
+          <span>상품명</span>
+          <span>가중치</span>
+          <span>확률(%)</span>
+          <span>색상(선택)</span>
+          <span>삭제</span>
+        </div>
+        <div id="items" class="items"></div>
+        <div class="admin-actions">
+          <button id="add" type="button">항목 추가</button>
+          <button id="reset" type="button">기본값으로</button>
+        </div>
+      </section>
+
+      <section class="card log-card">
+        <div class="log-head">
+          <div>
+            <h2>결과 기록</h2>
+            <p id="log-summary" class="hint">기록 0건</p>
+          </div>
+          <div class="admin-actions compact">
+            <button id="open-csv" type="button">CSV 파일 열기</button>
+            <button id="export-log" type="button">CSV 다운로드</button>
+            <button id="export-backup" type="button">전체 백업 다운로드</button>
+            <button id="import-backup" type="button">백업 불러오기</button>
+            <button id="clear-log" type="button">기록 삭제</button>
+          </div>
+        </div>
+        <input id="open-csv-file" type="file" accept=".csv,text/csv" hidden />
+        <input id="import-backup-file" type="file" accept=".json,application/json" hidden />
+        <p id="csv-status" class="hint">로컬 DB 기록을 표시 중입니다.</p>
+        <div id="stats-grid" class="stats-grid" aria-label="결과 통계"></div>
+        <div class="log-table-wrap">
+          <table class="log-table">
+            <thead>
+              <tr>
+                <th>시간</th>
+                <th>상품</th>
+                <th>삭제</th>
+              </tr>
+            </thead>
+            <tbody id="log-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card preview">
+        <h2>미리보기</h2>
+        <div class="wheel-wrap small">
+          <div class="pointer" aria-hidden="true"></div>
+          <canvas id="preview" width="280" height="280" aria-label="룰렛 미리보기"></canvas>
+        </div>
+        <p class="hint">저장 후 메인 페이지에서 적용됩니다.</p>
+      </section>
+
+      <div class="admin-save-bar bottom">
+        <span>모든 설정 변경 후 저장하세요.</span>
+        <button class="save-config" type="button">전체 설정 저장</button>
+      </div>
+
+      <a class="admin-link" href="index.html">메인으로</a>
+    </main>
+
+    <script src="js/storage.js"></script>
+    <script src="js/admin.js"></script>
+  </body>
+</html>
