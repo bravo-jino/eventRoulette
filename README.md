@@ -41,16 +41,12 @@ drop policy if exists "public read config" on roulette_config;
 drop policy if exists "public write config" on roulette_config;
 drop policy if exists "public update config" on roulette_config;
 drop policy if exists "public read logs" on roulette_logs;
-drop policy if exists "public insert logs" on roulette_logs;
 drop policy if exists "public delete logs" on roulette_logs;
+drop policy if exists "public insert roulette logs" on roulette_logs;
 
 create policy "public read active config"
 on roulette_config for select
 using (true);
-
-create policy "public insert roulette logs"
-on roulette_logs for insert
-with check (true);
 ```
 
 The anon key is public by design. Do not put service-role keys in this repo.
@@ -63,6 +59,8 @@ Edge Function validates the admin code and returns a short-lived admin token.
 Deploy the functions:
 
 ```sh
+supabase functions deploy roulette-entry-auth
+supabase functions deploy roulette-event-api
 supabase functions deploy roulette-admin-auth
 supabase functions deploy roulette-admin-api
 ```
@@ -72,9 +70,13 @@ Set function secrets:
 ```sh
 supabase secrets set ROULETTE_ADMIN_CODE="your-admin-code"
 supabase secrets set ROULETTE_ADMIN_TOKEN_SECRET="long-random-token-secret"
+supabase secrets set ROULETTE_ENTRY_CODE="your-entry-code"
+supabase secrets set ROULETTE_ENTRY_TOKEN_SECRET="another-long-random-token-secret"
 supabase secrets set ROULETTE_SERVICE_ROLE_KEY="your-service-role-key"
 ```
 
-Only `ROULETTE_ADMIN_CODE`, `ROULETTE_ADMIN_TOKEN_SECRET`, and
+Only `ROULETTE_ADMIN_CODE`, `ROULETTE_ADMIN_TOKEN_SECRET`,
+`ROULETTE_ENTRY_CODE`, `ROULETTE_ENTRY_TOKEN_SECRET`, and
 `ROULETTE_SERVICE_ROLE_KEY` must stay secret in Supabase. Never commit them to
-GitHub.
+GitHub. The browser can read the active roulette config, but result logging and
+admin actions go through Edge Functions.

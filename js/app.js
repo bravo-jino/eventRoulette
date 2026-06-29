@@ -246,7 +246,10 @@ window.addEventListener("resize", () => {
 
 spinButton.addEventListener("click", spin);
 
-init().catch(() => {
+(async () => {
+  await window.RouletteEntryAuth?.require?.();
+  await init();
+})().catch(() => {
   activeConfig = rouletteNormalizeConfig(ROULETTE_DEFAULT_CONFIG);
   renderConfiguredText(activeConfig);
   renderTitleImage(activeConfig);

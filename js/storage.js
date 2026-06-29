@@ -134,6 +134,10 @@ const RouletteRemote = (() => {
     return `${supabaseUrl}/rest/v1/${path}`;
   }
 
+  function buildFunctionUrl(name) {
+    return `${supabaseUrl}/functions/v1/${name}`;
+  }
+
   async function request(path, options = {}) {
     const response = await fetch(buildUrl(path), {
       ...options,
@@ -180,6 +184,27 @@ const RouletteRemote = (() => {
   }
 
   async function addLog(label, timestamp = new Date().toISOString()) {
+    const entryToken = await window.RouletteEntryAuth?.getToken?.();
+    if (entryToken) {
+      const response = await fetch(buildFunctionUrl("roulette-event-api"), {
+        method: "POST",
+        headers: {
+          apikey: supabaseAnonKey,
+          Authorization: `Bearer ${supabaseAnonKey}`,
+          "Content-Type": "application/json",
+          "x-entry-token": entryToken
+        },
+        body: JSON.stringify({ action: "addLog", payload: { label, timestamp } })
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      const text = await response.text();
+      return text ? JSON.parse(text) : { timestamp, label };
+    }
+
     const rows = await request(logsTable, {
       method: "POST",
       headers: { Prefer: "return=representation" },

@@ -550,6 +550,11 @@ canvas {
   margin: 10px 0 0;
 }
 
+body.event-access-required.event-access-locked .page,
+body.event-access-required:not(.event-access-ready) .page {
+  visibility: hidden;
+}
+
 .action-auth-overlay {
   position: fixed;
   inset: 0;

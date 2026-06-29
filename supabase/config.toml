@@ -3,3 +3,9 @@ verify_jwt = false
 
 [functions.roulette-admin-api]
 verify_jwt = false
+
+[functions.roulette-entry-auth]
+verify_jwt = false
+
+[functions.roulette-event-api]
+verify_jwt = false
