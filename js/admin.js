@@ -288,6 +288,7 @@ function renderStats(rows) {
 
 async function getVisibleRows() {
   if (visibleLogSource === "csv") return openedCsvRows;
+  if (RouletteStore.isRemoteEnabled()) return RouletteAdminApi.getLogs();
   return RouletteStore.getLogs();
 }
 
@@ -326,7 +327,11 @@ async function renderLog() {
       deleteButton.textContent = "삭제";
       deleteButton.addEventListener("click", () => runAdminAction(async () => {
         if (!confirm("이 기록을 삭제할까요?")) return;
-        await RouletteStore.deleteLog(entry.id);
+        if (RouletteStore.isRemoteEnabled()) {
+          await RouletteAdminApi.deleteLog(entry.id);
+        } else {
+          await RouletteStore.deleteLog(entry.id);
+        }
         await renderLog();
       }));
       actionCell.appendChild(deleteButton);
@@ -401,13 +406,19 @@ function saveConfig() {
     const items = readRows();
     if (!validateItems(items)) return;
 
-    await RouletteStore.saveConfig({
+    const config = {
       items,
       eventTitle: eventTitleInput.value.trim() || ROULETTE_DEFAULT_CONFIG.eventTitle,
       spinButtonText: spinButtonInput.value.trim() || ROULETTE_DEFAULT_CONFIG.spinButtonText,
       titleImage: currentTitleImage,
       loggingEnabled: loggingEnabledInput.checked === true
-    });
+    };
+
+    if (RouletteStore.isRemoteEnabled()) {
+      await RouletteAdminApi.saveConfig(config);
+    } else {
+      await RouletteStore.saveConfig(config);
+    }
     alert("저장되었습니다.");
   });
 }
@@ -415,7 +426,9 @@ function saveConfig() {
 saveButtons.forEach((button) => button.addEventListener("click", saveConfig));
 
 resetButton.addEventListener("click", () => runAdminAction(async () => {
-  const config = await RouletteStore.resetConfig();
+  const config = RouletteStore.isRemoteEnabled()
+    ? await RouletteAdminApi.resetConfig()
+    : await RouletteStore.resetConfig();
   renderSettings(config);
   renderRows(config);
 }));
@@ -442,7 +455,9 @@ exportLogButton.addEventListener("click", () => runAdminAction(async () => {
 }));
 
 exportBackupButton.addEventListener("click", () => runAdminAction(async () => {
-  const data = await RouletteStore.exportData();
+  const data = RouletteStore.isRemoteEnabled()
+    ? await RouletteAdminApi.exportData()
+    : await RouletteStore.exportData();
   downloadJson(`roulette-backup-${new Date().toISOString().slice(0, 10)}.json`, data);
 }));
 
@@ -458,7 +473,11 @@ importBackupInput.addEventListener("change", () => {
   reader.addEventListener("load", () => runAdminAction(async () => {
     if (!confirm("백업 파일의 설정과 결과 기록으로 현재 데이터를 교체할까요?")) return;
     const data = JSON.parse(String(reader.result || "{}"));
-    await RouletteStore.importData(data);
+    if (RouletteStore.isRemoteEnabled()) {
+      await RouletteAdminApi.importData(data);
+    } else {
+      await RouletteStore.importData(data);
+    }
     const config = await RouletteStore.getConfig();
     renderSettings(config);
     renderRows(config);
@@ -474,7 +493,11 @@ importBackupInput.addEventListener("change", () => {
 
 clearLogButton.addEventListener("click", () => runAdminAction(async () => {
   if (!confirm("로컬 DB 기록을 모두 삭제할까요?")) return;
-  await RouletteStore.clearLogs();
+  if (RouletteStore.isRemoteEnabled()) {
+    await RouletteAdminApi.clearLogs();
+  } else {
+    await RouletteStore.clearLogs();
+  }
   visibleLogSource = "db";
   openedCsvRows = [];
   await renderLog();
@@ -500,6 +523,9 @@ openCsvInput.addEventListener("change", () => {
 window.addEventListener("resize", renderPreview);
 
 (async function initAdmin() {
+  if (RouletteStore.isRemoteEnabled()) {
+    await RouletteAdminAuth.require();
+  }
   await RouletteStore.init();
   if (RouletteStore.isRemoteEnabled()) {
     csvStatus.textContent = "공용 DB 기록을 표시 중입니다.";

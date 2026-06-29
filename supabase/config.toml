@@ -1,0 +1,5 @@
+[functions.roulette-admin-auth]
+verify_jwt = false
+
+[functions.roulette-admin-api]
+verify_jwt = false

@@ -37,30 +37,44 @@ create table if not exists roulette_logs (
 alter table roulette_config enable row level security;
 alter table roulette_logs enable row level security;
 
-create policy "public read config"
+drop policy if exists "public read config" on roulette_config;
+drop policy if exists "public write config" on roulette_config;
+drop policy if exists "public update config" on roulette_config;
+drop policy if exists "public read logs" on roulette_logs;
+drop policy if exists "public insert logs" on roulette_logs;
+drop policy if exists "public delete logs" on roulette_logs;
+
+create policy "public read active config"
 on roulette_config for select
 using (true);
 
-create policy "public write config"
-on roulette_config for insert
-with check (true);
-
-create policy "public update config"
-on roulette_config for update
-using (true)
-with check (true);
-
-create policy "public read logs"
-on roulette_logs for select
-using (true);
-
-create policy "public insert logs"
+create policy "public insert roulette logs"
 on roulette_logs for insert
 with check (true);
-
-create policy "public delete logs"
-on roulette_logs for delete
-using (true);
 ```
 
 The anon key is public by design. Do not put service-role keys in this repo.
+
+## Admin Protection
+`admin.html` is protected by a Supabase Edge Function admin code. On GitHub Pages,
+the HTML file itself is still public, but admin actions are blocked unless the
+Edge Function validates the admin code and returns a short-lived admin token.
+
+Deploy the functions:
+
+```sh
+supabase functions deploy roulette-admin-auth
+supabase functions deploy roulette-admin-api
+```
+
+Set function secrets:
+
+```sh
+supabase secrets set ROULETTE_ADMIN_CODE="your-admin-code"
+supabase secrets set ROULETTE_ADMIN_TOKEN_SECRET="long-random-token-secret"
+supabase secrets set SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
+```
+
+Only `ROULETTE_ADMIN_CODE`, `ROULETTE_ADMIN_TOKEN_SECRET`, and
+`SUPABASE_SERVICE_ROLE_KEY` must stay secret in Supabase. Never commit them to
+GitHub.

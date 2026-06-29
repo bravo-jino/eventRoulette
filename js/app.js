@@ -8,18 +8,11 @@ const result = document.getElementById("result");
 const eventTitle = document.getElementById("event-title");
 const titleImageSlot = document.getElementById("title-image-slot");
 const titleImage = document.getElementById("title-image");
-const adminLink = document.querySelector(".admin-link-fixed");
-const adminAuthOverlay = document.getElementById("admin-auth-overlay");
-const adminAuthPassword = document.getElementById("admin-auth-password");
-const adminAuthError = document.getElementById("admin-auth-error");
-const adminAuthCancel = document.getElementById("admin-auth-cancel");
-const adminAuthSubmit = document.getElementById("admin-auth-submit");
 
 const ctx = wheel.getContext("2d");
 let currentRotation = 0;
 let spinning = false;
 let activeConfig = rouletteNormalizeConfig(ROULETTE_DEFAULT_CONFIG);
-const ADMIN_PASSWORD = "swfa3000";
 
 function buildSegments(items) {
   const totalWeight = items.reduce((sum, item) => sum + item.weight, 0) || 1;
@@ -246,44 +239,12 @@ async function init() {
   drawWheel(buildSegments(activeConfig.items), currentRotation);
 }
 
-function openAdminAuth() {
-  adminAuthPassword.value = "";
-  adminAuthError.hidden = true;
-  adminAuthOverlay.hidden = false;
-  adminAuthPassword.focus();
-}
-
-function closeAdminAuth() {
-  adminAuthOverlay.hidden = true;
-}
-
-function submitAdminAuth() {
-  if (adminAuthPassword.value === ADMIN_PASSWORD) {
-    window.location.href = adminLink.href;
-    return;
-  }
-  adminAuthError.hidden = false;
-  adminAuthPassword.value = "";
-  adminAuthPassword.focus();
-}
-
 window.addEventListener("resize", () => {
   resizeWheel();
   drawWheel(buildSegments(activeConfig.items), currentRotation);
 });
 
 spinButton.addEventListener("click", spin);
-
-adminLink.addEventListener("click", (event) => {
-  event.preventDefault();
-  openAdminAuth();
-});
-
-adminAuthSubmit.addEventListener("click", submitAdminAuth);
-adminAuthCancel.addEventListener("click", closeAdminAuth);
-adminAuthPassword.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") submitAdminAuth();
-});
 
 init().catch(() => {
   activeConfig = rouletteNormalizeConfig(ROULETTE_DEFAULT_CONFIG);
