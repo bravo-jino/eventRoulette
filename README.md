@@ -72,9 +72,9 @@ Set function secrets:
 ```sh
 supabase secrets set ROULETTE_ADMIN_CODE="your-admin-code"
 supabase secrets set ROULETTE_ADMIN_TOKEN_SECRET="long-random-token-secret"
-supabase secrets set SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
+supabase secrets set ROULETTE_SERVICE_ROLE_KEY="your-service-role-key"
 ```
 
 Only `ROULETTE_ADMIN_CODE`, `ROULETTE_ADMIN_TOKEN_SECRET`, and
-`SUPABASE_SERVICE_ROLE_KEY` must stay secret in Supabase. Never commit them to
+`ROULETTE_SERVICE_ROLE_KEY` must stay secret in Supabase. Never commit them to
 GitHub.
