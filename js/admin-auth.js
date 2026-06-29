@@ -1,26 +1,16 @@
 (function () {
-  const SESSION_KEY = "rouletteAdminSession";
   const remoteConfig = window.ROULETTE_REMOTE_CONFIG || {};
   const supabaseUrl = String(remoteConfig.supabaseUrl || "").replace(/\/+$/, "");
   const supabaseAnonKey = String(remoteConfig.supabaseAnonKey || "");
+  let currentSession = null;
 
-  function getStoredSession() {
-    try {
-      const session = JSON.parse(sessionStorage.getItem(SESSION_KEY) || "null");
-      if (!session?.token || !session?.expiresAt) return null;
-      if (Date.now() >= Number(session.expiresAt)) {
-        sessionStorage.removeItem(SESSION_KEY);
-        return null;
-      }
-      return session;
-    } catch {
-      sessionStorage.removeItem(SESSION_KEY);
+  function getCurrentSession() {
+    if (!currentSession?.token || !currentSession?.expiresAt) return null;
+    if (Date.now() >= Number(currentSession.expiresAt)) {
+      currentSession = null;
       return null;
     }
-  }
-
-  function setStoredSession(session) {
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    return currentSession;
   }
 
   function getFunctionUrl(name) {
@@ -65,11 +55,12 @@
   }
 
   async function requestSession() {
-    const existing = getStoredSession();
+    const existing = getCurrentSession();
     if (existing) return existing;
 
     if (!supabaseUrl || !supabaseAnonKey) {
-      return { token: "", expiresAt: Date.now() + 60 * 60 * 1000 };
+      currentSession = { token: "", expiresAt: Date.now() + 60 * 60 * 1000 };
+      return currentSession;
     }
 
     return new Promise((resolve) => {
@@ -88,13 +79,12 @@
 
         try {
           const data = await verifyAdminCode(input.value);
-          const session = {
+          currentSession = {
             token: data.token,
             expiresAt: Date.now() + Number(data.expiresIn || 3600) * 1000
           };
-          setStoredSession(session);
           overlay.remove();
-          resolve(session);
+          resolve(currentSession);
         } catch {
           error.textContent = "관리자 코드가 올바르지 않습니다.";
           error.hidden = false;
