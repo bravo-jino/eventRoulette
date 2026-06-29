@@ -101,4 +101,14 @@
     require: requestSession,
     getToken: async () => (await requestSession()).token
   };
+
+  window.addEventListener("pagehide", () => {
+    currentSession = null;
+  });
+
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) {
+      window.location.reload();
+    }
+  });
 })();
