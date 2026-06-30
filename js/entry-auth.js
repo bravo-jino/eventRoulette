@@ -4,6 +4,11 @@
   const supabaseUrl = String(remoteConfig.supabaseUrl || "").replace(/\/+$/, "");
   const supabaseAnonKey = String(remoteConfig.supabaseAnonKey || "");
 
+  function showPage() {
+    document.body.classList.remove("event-access-locked");
+    document.body.classList.add("event-access-ready");
+  }
+
   function getStoredSession() {
     try {
       const session = JSON.parse(sessionStorage.getItem(SESSION_KEY) || "null");
@@ -61,10 +66,13 @@
 
   async function requestSession() {
     const existing = getStoredSession();
-    if (existing) return existing;
+    if (existing) {
+      showPage();
+      return existing;
+    }
 
     if (!supabaseUrl || !supabaseAnonKey) {
-      document.body.classList.add("event-access-ready");
+      showPage();
       return { token: "", expiresAt: Date.now() + 60 * 60 * 1000 };
     }
 
@@ -91,8 +99,7 @@
             expiresAt: Date.now() + Number(data.expiresIn || 43200) * 1000
           };
           setStoredSession(session);
-          document.body.classList.remove("event-access-locked");
-          document.body.classList.add("event-access-ready");
+          showPage();
           overlay.remove();
           resolve(session);
         } catch {
