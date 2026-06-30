@@ -1,6 +1,9 @@
-﻿const TWO_PI = Math.PI * 2;
+const TWO_PI = Math.PI * 2;
 const POINTER_ANGLE = -Math.PI / 2;
 const MIN_SPIN_TURNS = 2;
+const MAX_SPIN_BOOSTS = 3;
+const BOOST_TURNS = 2.2;
+const BOOST_DURATION = 1700;
 
 const wheel = document.getElementById("wheel");
 const spinButton = document.getElementById("spin");
@@ -13,6 +16,7 @@ const ctx = wheel.getContext("2d");
 let currentRotation = 0;
 let spinning = false;
 let activeConfig = rouletteNormalizeConfig(ROULETTE_DEFAULT_CONFIG);
+let activeSpin = null;
 
 function buildSegments(items) {
   const totalWeight = items.reduce((sum, item) => sum + item.weight, 0) || 1;
@@ -191,8 +195,31 @@ async function recordResult(label) {
   await RouletteStore.addLog(label);
 }
 
+function triggerBoostEffect() {
+  const wheelWrap = wheel.parentElement;
+  wheelWrap.classList.remove("boost");
+  spinButton.classList.remove("boost");
+  void wheelWrap.offsetWidth;
+  wheelWrap.classList.add("boost");
+  spinButton.classList.add("boost");
+}
+
+function boostSpin() {
+  if (!activeSpin || activeSpin.boostCount >= MAX_SPIN_BOOSTS) return;
+
+  activeSpin.boostCount += 1;
+  activeSpin.startRotation = currentRotation;
+  activeSpin.startTime = performance.now();
+  activeSpin.finalRotation += BOOST_TURNS * TWO_PI;
+  activeSpin.duration = BOOST_DURATION + activeSpin.boostCount * 260;
+  triggerBoostEffect();
+}
+
 async function spin() {
-  if (spinning) return;
+  if (spinning) {
+    boostSpin();
+    return;
+  }
 
   activeConfig = await RouletteStore.getConfig();
   renderConfiguredText(activeConfig);
@@ -200,31 +227,39 @@ async function spin() {
   const target = chooseSegment(segments);
   const targetAngle = (target.start + target.end) / 2;
 
-  const startRotation = currentRotation;
-  const finalRotation = getFinalRotation(startRotation, targetAngle);
-  const duration = 2800;
-  const start = performance.now();
-
   spinning = true;
-  spinButton.disabled = true;
   result.textContent = "";
+  spinButton.textContent = "한 번 더!";
+  activeSpin = {
+    segments,
+    target,
+    startRotation: currentRotation,
+    finalRotation: getFinalRotation(currentRotation, targetAngle),
+    duration: 2800,
+    startTime: performance.now(),
+    boostCount: 0
+  };
 
   function animate(now) {
-    const t = Math.min(1, (now - start) / duration);
+    if (!activeSpin) return;
+
+    const t = Math.min(1, (now - activeSpin.startTime) / activeSpin.duration);
     const ease = 1 - Math.pow(1 - t, 3);
-    currentRotation = startRotation + (finalRotation - startRotation) * ease;
-    drawWheel(segments, currentRotation);
+    currentRotation = activeSpin.startRotation + (activeSpin.finalRotation - activeSpin.startRotation) * ease;
+    drawWheel(activeSpin.segments, currentRotation);
 
     if (t < 1) {
       requestAnimationFrame(animate);
       return;
     }
 
+    const finalTarget = activeSpin.target;
     spinning = false;
-    spinButton.disabled = false;
-    result.textContent = `결과: ${target.label}`;
-    recordResult(target.label).catch(() => {
-      result.textContent = `결과: ${target.label} (기록 저장 실패)`;
+    activeSpin = null;
+    spinButton.textContent = activeConfig.spinButtonText || ROULETTE_DEFAULT_CONFIG.spinButtonText;
+    result.textContent = finalTarget.label;
+    recordResult(finalTarget.label).catch((error) => {
+      console.warn("Result log failed:", error);
     });
   }
 

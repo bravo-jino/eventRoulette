@@ -18,9 +18,7 @@
 
 body {
   margin: 0;
-  background:
-    radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.28), transparent 34%),
-    linear-gradient(180deg, #f8fbff 0%, #e9eef8 100%);
+  background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
   color: var(--text);
 }
 
@@ -45,33 +43,20 @@ body {
   padding: clamp(28px, 4vh, 76px) clamp(28px, 6vw, 72px);
   position: relative;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 50% 18%, rgba(250, 204, 21, 0.22), transparent 20%),
-    radial-gradient(circle at 50% 46%, rgba(56, 189, 248, 0.24), transparent 34%),
-    linear-gradient(180deg, #ffffff 0%, #edf4ff 52%, #e5ebf5 100%);
-}
-
-.event-page::before,
-.event-page::after {
-  content: "";
-  position: absolute;
-  border-radius: 999px;
-  pointer-events: none;
+  background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
 }
 
 .event-page::before {
+  content: "";
+  position: absolute;
   inset: 32px;
-  border: 2px solid rgba(23, 62, 165, 0.09);
+  border: 1px solid rgba(23, 62, 165, 0.08);
+  border-radius: 24px;
+  pointer-events: none;
 }
 
 .event-page::after {
-  width: 760px;
-  height: 760px;
-  left: 50%;
-  top: 42%;
-  transform: translate(-50%, -50%);
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.55), rgba(56, 189, 248, 0.08) 46%, transparent 68%);
-  z-index: 0;
+  content: none;
 }
 
 .event-page .hero {
@@ -130,12 +115,10 @@ body {
 .event-page .wheel-wrap::before {
   content: "";
   position: absolute;
-  inset: -20px;
+  inset: -14px;
   border-radius: 50%;
-  background:
-    radial-gradient(circle, rgba(255, 255, 255, 0.95) 0 60%, rgba(103, 232, 249, 0.42) 70%, transparent 71%),
-    conic-gradient(from 0deg, rgba(250, 204, 21, 0.32), rgba(56, 189, 248, 0.22), rgba(244, 63, 94, 0.18), rgba(250, 204, 21, 0.32));
-  box-shadow: 0 32px 70px rgba(15, 42, 119, 0.25);
+  background: #ffffff;
+  box-shadow: 0 22px 48px rgba(15, 42, 119, 0.18);
   z-index: -1;
 }
 
@@ -148,6 +131,10 @@ body {
   bottom: -5%;
   background: radial-gradient(ellipse, rgba(15, 23, 42, 0.22), transparent 68%);
   z-index: -2;
+}
+
+.event-page .wheel-wrap.boost::before {
+  animation: wheelBoostRing 620ms ease-out;
 }
 
 .wheel-wrap.small {
@@ -196,6 +183,10 @@ canvas {
   transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
 }
 
+#spin.boost {
+  animation: spinBoostButton 420ms ease-out;
+}
+
 #spin:hover {
   filter: brightness(1.06);
   transform: translateY(-2px);
@@ -211,6 +202,36 @@ canvas {
 #spin:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+@keyframes wheelBoostRing {
+  0% {
+    box-shadow: 0 22px 48px rgba(15, 42, 119, 0.18), 0 0 0 0 rgba(250, 204, 21, 0.72);
+    transform: scale(1);
+  }
+  58% {
+    box-shadow: 0 24px 54px rgba(15, 42, 119, 0.22), 0 0 0 22px rgba(250, 204, 21, 0.22);
+    transform: scale(1.018);
+  }
+  100% {
+    box-shadow: 0 22px 48px rgba(15, 42, 119, 0.18), 0 0 0 34px rgba(250, 204, 21, 0);
+    transform: scale(1);
+  }
+}
+
+@keyframes spinBoostButton {
+  0% {
+    transform: translateY(0) scale(1);
+    filter: brightness(1);
+  }
+  45% {
+    transform: translateY(-3px) scale(1.04);
+    filter: brightness(1.16);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    filter: brightness(1);
+  }
 }
 
 .admin-link {
