@@ -2,7 +2,7 @@ const TWO_PI = Math.PI * 2;
 const POINTER_ANGLE = -Math.PI / 2;
 const MIN_SPIN_TURNS = 2;
 const MAX_SPIN_BOOSTS = 3;
-const BOOST_TURNS = 2.2;
+const BOOST_EXTRA_TURNS = 2;
 const BOOST_DURATION = 1700;
 
 const wheel = document.getElementById("wheel");
@@ -214,7 +214,7 @@ function boostSpin() {
   activeSpin.boostCount += 1;
   activeSpin.startRotation = currentRotation;
   activeSpin.startTime = performance.now();
-  activeSpin.finalRotation += BOOST_TURNS * TWO_PI;
+  activeSpin.finalRotation += BOOST_EXTRA_TURNS * TWO_PI;
   activeSpin.duration = BOOST_DURATION + activeSpin.boostCount * 260;
   triggerBoostEffect();
 }
