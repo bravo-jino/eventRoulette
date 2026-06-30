@@ -18,7 +18,10 @@
 
 body {
   margin: 0;
-  background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+  background:
+    radial-gradient(circle at 50% 8%, rgba(56, 189, 248, 0.34), transparent 28%),
+    radial-gradient(circle at 50% 48%, rgba(250, 204, 21, 0.18), transparent 30%),
+    linear-gradient(180deg, #f8fbff 0%, #e9eef8 100%);
   color: var(--text);
 }
 
@@ -43,20 +46,28 @@ body {
   padding: clamp(28px, 4vh, 76px) clamp(28px, 6vw, 72px);
   position: relative;
   overflow: hidden;
-  background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+  background:
+    radial-gradient(circle at 50% 16%, rgba(250, 204, 21, 0.20), transparent 18%),
+    radial-gradient(circle at 50% 43%, rgba(56, 189, 248, 0.24), transparent 32%),
+    linear-gradient(180deg, #ffffff 0%, #eef6ff 55%, #e8edf5 100%);
 }
 
 .event-page::before {
-  content: "";
-  position: absolute;
-  inset: 32px;
-  border: 1px solid rgba(23, 62, 165, 0.08);
-  border-radius: 24px;
-  pointer-events: none;
+  content: none;
 }
 
 .event-page::after {
-  content: none;
+  content: "";
+  position: absolute;
+  width: 860px;
+  height: 860px;
+  left: 50%;
+  top: 43%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.62), rgba(56, 189, 248, 0.10) 46%, transparent 68%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .event-page .hero {
@@ -117,8 +128,10 @@ body {
   position: absolute;
   inset: -14px;
   border-radius: 50%;
-  background: #ffffff;
-  box-shadow: 0 22px 48px rgba(15, 42, 119, 0.18);
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.98) 0 59%, rgba(103, 232, 249, 0.25) 68%, transparent 70%),
+    conic-gradient(from 0deg, rgba(250, 204, 21, 0.28), rgba(56, 189, 248, 0.18), rgba(244, 63, 94, 0.15), rgba(250, 204, 21, 0.28));
+  box-shadow: 0 24px 54px rgba(15, 42, 119, 0.20);
   z-index: -1;
 }
 
@@ -135,6 +148,22 @@ body {
 
 .event-page .wheel-wrap.boost::before {
   animation: wheelBoostRing 620ms ease-out;
+}
+
+.event-page .wheel-wrap.spinning::before {
+  animation: wheelSpinAura 900ms ease-in-out infinite alternate;
+}
+
+.event-page .wheel-wrap.spinning.boost::before {
+  animation: wheelBoostRing 620ms ease-out;
+}
+
+.wheel-wrap.spinning canvas {
+  filter: saturate(1.08) drop-shadow(0 0 16px rgba(56, 189, 248, 0.34));
+}
+
+.wheel-wrap.spinning .pointer {
+  animation: pointerPulse 520ms ease-in-out infinite alternate;
 }
 
 .wheel-wrap.small {
@@ -156,6 +185,7 @@ body {
 canvas {
   width: 100%;
   height: 100%;
+  transition: filter 180ms ease;
 }
 
 .actions {
@@ -231,6 +261,28 @@ canvas {
   100% {
     transform: translateY(0) scale(1);
     filter: brightness(1);
+  }
+}
+
+@keyframes wheelSpinAura {
+  0% {
+    box-shadow: 0 24px 54px rgba(15, 42, 119, 0.20), 0 0 0 0 rgba(56, 189, 248, 0.22);
+    transform: scale(1);
+  }
+  100% {
+    box-shadow: 0 30px 68px rgba(15, 42, 119, 0.26), 0 0 0 14px rgba(56, 189, 248, 0.08);
+    transform: scale(1.006);
+  }
+}
+
+@keyframes pointerPulse {
+  0% {
+    transform: translateY(0) scale(1);
+    filter: drop-shadow(0 5px 6px rgba(15, 23, 42, 0.32));
+  }
+  100% {
+    transform: translateY(-4px) scale(1.06);
+    filter: drop-shadow(0 8px 10px rgba(244, 63, 94, 0.34));
   }
 }
 
@@ -683,6 +735,43 @@ body.event-access-required:not(.event-access-ready) .page {
 
 @media (min-width: 900px) and (min-height: 1500px) {
   .event-page {
+    width: 1080px;
     min-height: 1920px;
+    grid-template-rows: 430px 820px 126px 220px;
+    gap: 54px;
+    padding: 84px 84px 72px;
+  }
+
+  .event-page .hero {
+    grid-template-rows: minmax(240px, 1fr) auto;
+    gap: 28px;
+  }
+
+  .hero h1 {
+    font-size: 86px;
+  }
+
+  .subtitle {
+    font-size: 26px;
+  }
+
+  .title-image-slot {
+    min-height: 240px;
+    max-height: 360px;
+  }
+
+  .wheel-wrap {
+    width: 820px;
+  }
+
+  #spin {
+    min-width: 460px;
+    padding: 28px 42px;
+    font-size: 34px;
+  }
+
+  .result {
+    min-height: 86px;
+    font-size: 44px;
   }
 }

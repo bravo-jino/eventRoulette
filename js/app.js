@@ -11,6 +11,7 @@ const result = document.getElementById("result");
 const eventTitle = document.getElementById("event-title");
 const titleImageSlot = document.getElementById("title-image-slot");
 const titleImage = document.getElementById("title-image");
+const wheelWrap = wheel.parentElement;
 
 const ctx = wheel.getContext("2d");
 let currentRotation = 0;
@@ -196,12 +197,15 @@ async function recordResult(label) {
 }
 
 function triggerBoostEffect() {
-  const wheelWrap = wheel.parentElement;
   wheelWrap.classList.remove("boost");
   spinButton.classList.remove("boost");
   void wheelWrap.offsetWidth;
   wheelWrap.classList.add("boost");
   spinButton.classList.add("boost");
+  window.setTimeout(() => {
+    wheelWrap.classList.remove("boost");
+    spinButton.classList.remove("boost");
+  }, 650);
 }
 
 function boostSpin() {
@@ -229,6 +233,7 @@ async function spin() {
 
   spinning = true;
   result.textContent = "";
+  wheelWrap.classList.add("spinning");
   spinButton.textContent = "한 번 더!";
   activeSpin = {
     segments,
@@ -257,6 +262,8 @@ async function spin() {
     spinning = false;
     activeSpin = null;
     spinButton.textContent = activeConfig.spinButtonText || ROULETTE_DEFAULT_CONFIG.spinButtonText;
+    wheelWrap.classList.remove("spinning", "boost");
+    spinButton.classList.remove("boost");
     result.textContent = finalTarget.label;
     recordResult(finalTarget.label).catch((error) => {
       console.warn("Result log failed:", error);
