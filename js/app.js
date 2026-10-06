@@ -32,8 +32,8 @@ function buildSegments(items) {
 }
 
 function getWheelFontSize(context, label, radius, maxWidth) {
-  let fontSize = Math.min(radius * 0.092, 42);
-  const minFontSize = Math.max(18, radius * 0.052);
+  let fontSize = radius * 0.092;
+  const minFontSize = radius * 0.052;
 
   while (fontSize > minFontSize) {
     context.font = `900 ${fontSize}px Pretendard, Noto Sans KR, Arial, sans-serif`;
@@ -131,7 +131,8 @@ function drawWheel(segments, rotation = 0, canvas = wheel, context = ctx) {
 }
 
 function resizeWheel() {
-  const size = Math.min(820, wheel.parentElement.clientWidth);
+  const displaySize = wheel.getBoundingClientRect().width;
+  const size = Math.max(1, Math.min(2048, Math.round(displaySize * (window.devicePixelRatio || 1))));
   wheel.width = size;
   wheel.height = size;
 }
@@ -284,6 +285,11 @@ async function init() {
 window.addEventListener("resize", () => {
   resizeWheel();
   drawWheel(buildSegments(activeConfig.items), currentRotation);
+});
+
+window.addEventListener("roulette-layout", () => {
+  resizeWheel();
+  drawWheel(activeSpin?.segments || buildSegments(activeConfig.items), currentRotation);
 });
 
 spinButton.addEventListener("click", spin);

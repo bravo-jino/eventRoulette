@@ -733,12 +733,26 @@ body.event-access-required:not(.event-access-ready) .page {
   }
 }
 
-@media (min-width: 900px) and (min-height: 1500px) {
+/* Fit the portrait event stage to the browser viewport, including its toolbar. */
+body.event-access-required {
+  overflow: hidden;
+}
+
+body.event-access-required .event-page {
+  position: fixed;
+  left: var(--event-left, 50%);
+  top: var(--event-top, 50%);
+  transform: translate(-50%, -50%) scale(var(--event-scale, 1));
+  transform-origin: center;
+  height: 1920px;
+  min-height: 0;
+}
+
+@media all {
   .event-page {
     width: 1080px;
-    min-height: 1920px;
-    grid-template-rows: 430px 820px 126px 220px;
-    gap: 54px;
+    grid-template-rows: 430px 820px 126px minmax(0, 1fr);
+    gap: 48px;
     padding: 84px 84px 72px;
   }
 
@@ -747,20 +761,20 @@ body.event-access-required:not(.event-access-ready) .page {
     gap: 28px;
   }
 
-  .hero h1 {
+  .event-page .hero h1 {
     font-size: 86px;
   }
 
-  .subtitle {
+  .event-page .subtitle {
     font-size: 26px;
   }
 
-  .title-image-slot {
+  .event-page .title-image-slot {
     min-height: 240px;
     max-height: 360px;
   }
 
-  .wheel-wrap {
+  .event-page .wheel-wrap {
     width: 820px;
   }
 
@@ -770,8 +784,27 @@ body.event-access-required:not(.event-access-ready) .page {
     font-size: 34px;
   }
 
-  .result {
+  .event-page .result {
     min-height: 86px;
     font-size: 44px;
+    max-width: 100%;
+    overflow-wrap: anywhere;
   }
+}
+
+.event-page .hero {
+  width: 100%;
+  min-width: 0;
+}
+
+.event-page .title-image-slot[hidden] {
+  display: none;
+}
+
+.event-page .hero h1 {
+  overflow-wrap: anywhere;
+}
+
+.event-page .admin-link-fixed {
+  position: absolute;
 }
