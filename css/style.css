@@ -753,7 +753,7 @@ body.event-access-required .event-page {
     width: 1080px;
     grid-template-rows: 430px 820px 126px minmax(0, 1fr);
     gap: 48px;
-    padding: 84px 84px 72px;
+    padding: 96px 84px;
   }
 
   .event-page .hero {
